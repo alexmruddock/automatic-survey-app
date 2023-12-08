@@ -8,7 +8,7 @@ function RegistrationForm({ setUserDetails }) {
     const navigate = useNavigate(); // Used to redirect the user
 
     const handleLogin = async () => {
-        const response = await fetch('https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/login', {
+        const response = await fetch('https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ function RegistrationForm({ setUserDetails }) {
         event.preventDefault(); // Prevent default form submission
         
         // Send form data to the API for registration
-        const response = await fetch('https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/register', {
+        const response = await fetch('https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ function RegistrationForm({ setUserDetails }) {
 }
 
 async function fetchUserRole() {
-    const response = await fetch("https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/fetch-user", {
+    const response = await fetch("https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/fetch-user", {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
       },

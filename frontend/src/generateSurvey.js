@@ -5,7 +5,7 @@ export async function generateSurvey(description) {
     console.log("Description received in generateSurvey:", description);
     
     const response = await fetch(
-      "https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/generate-survey",
+      "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/generate-survey",
       {
         method: "POST",
         headers: {

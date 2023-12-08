@@ -11,7 +11,7 @@ function SurveysList({ userRole }) {
   useEffect(() => {
     if (userRole) {
       fetch(
-        "https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/get-surveys"
+        "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/get-surveys"
       )
         .then((response) => {
           if (!response.ok) {
@@ -43,7 +43,7 @@ function SurveysList({ userRole }) {
       const token = localStorage.getItem("accessToken");
 
       fetch(
-        `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/delete-survey/${surveyId}`,
+        `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/delete-survey/${surveyId}`,
         {
           method: "DELETE",
           headers: {

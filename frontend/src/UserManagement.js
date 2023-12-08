@@ -6,7 +6,7 @@ function UserManagement() {
 
   useEffect(() => {
     authenticatedFetch(
-      "https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/users"
+      "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/users"
     )
       .then((response) => response.json())
       .then((data) => setUsers(data))
@@ -15,7 +15,7 @@ function UserManagement() {
 
   const handleRoleChange = (userId, newRole) => {
     authenticatedFetch(
-      `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/update-user/${userId}`,
+      `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/update-user/${userId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -41,7 +41,7 @@ function UserManagement() {
   const handleDeleteUser = (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       authenticatedFetch(
-        `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/delete-user/${userId}`,
+        `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/delete-user/${userId}`,
         {
           method: "DELETE",
         }

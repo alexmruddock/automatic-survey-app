@@ -14,7 +14,7 @@ function SurveyResponses() {
 
     // Fetch the survey details
     fetch(
-      `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/retrieve-survey/${surveyId}`,
+      `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/retrieve-survey/${surveyId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -27,7 +27,7 @@ function SurveyResponses() {
 
     // Fetch the survey responses
     fetch(
-      `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/survey-responses/${surveyId}`,
+      `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/survey-responses/${surveyId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ function SurveyResponses() {
   const handleAnalyzeResponses = async () => {
     try {
       const response = await authenticatedFetch(
-        `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/analyze-responses/${surveyId}`,
+        `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/analyze-responses/${surveyId}`,
         {
           method: "POST",
         }

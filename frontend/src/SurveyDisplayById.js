@@ -20,7 +20,7 @@ function SurveyDisplayById() {
 
   useEffect(() => {
     fetch(
-      `https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/retrieve-survey/${surveyId}`
+      `https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/retrieve-survey/${surveyId}`
     )
       .then((response) => {
         if (!response.ok) {
@@ -175,7 +175,7 @@ async function submitSurvey(surveyId, answers) {
   const userEmail = localStorage.getItem("userEmail"); // Retrieve the user's email from local storage
 
   const response = await fetch(
-    "https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/submit-response",
+    "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/submit-response",
     {
       method: "POST",
       headers: {

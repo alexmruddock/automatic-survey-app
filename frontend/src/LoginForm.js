@@ -10,7 +10,7 @@ function LoginForm({ setUserDetails }) {
     event.preventDefault();
 
     const response = await fetch(
-      "https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/login",
+      "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/login",
       {
         method: "POST",
         headers: {
@@ -64,7 +64,7 @@ function LoginForm({ setUserDetails }) {
 }
 
 async function fetchUserRole() {
-  const response = await fetch("https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/fetch-user", {
+  const response = await fetch("https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/fetch-user", {
     headers: {
       "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
     },

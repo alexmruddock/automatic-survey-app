@@ -3,7 +3,7 @@ export async function saveSurvey(surveyData) {
     const token = localStorage.getItem("accessToken");
   
     const response = await fetch(
-      "https://bookish-pancake-q7w7vvr66ggfxp5j-3000.app.github.dev/create-survey",
+      "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/create-survey",
       {
         method: "POST",
         headers: {
