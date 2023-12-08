@@ -190,10 +190,11 @@ app.delete(
 
 // OpenAI API
 const { OpenAI } = require("openai");
+const openAIKey = process.env.OPENAI_API_KEY;
 
 // Get key from .env file
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: openAIKey,
 });
 
 // Generate survey questions from description
