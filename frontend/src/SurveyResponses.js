@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import BackButton from "./BackButton";
 import authenticatedFetch from "./authenticatedFetch";
 import jsPDF from "jspdf";
+import { useNavigate } from "react-router-dom";
 
 function SurveyResponses() {
   const [surveyTitle, setSurveyTitle] = useState("");
@@ -75,18 +76,34 @@ function SurveyResponses() {
     }
   };
 
+  const navigate = useNavigate();
+
+  const handleViewVisualizations = () => {
+    navigate(`/survey-visualizations/${surveyId}`);
+  }
+
   return (
     <div className="p-6 bg-white shadow-md rounded-lg">
       <BackButton />
+      
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Survey Responses
       </h2>
+      
       <button
         onClick={handleAnalyzeResponses}
         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-4 transition duration-300"
       >
         Analyze Responses
       </button>
+      
+      <button
+        onClick={handleViewVisualizations}
+        className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+      > 
+        View Visualizations
+      </button>
+      
       {responses.length > 0 ? (
         <table className="min-w-full table-auto border-collapse bg-white shadow-sm rounded-lg">
           <thead className="bg-gray-100">

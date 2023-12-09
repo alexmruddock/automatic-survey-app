@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const ObjectId = mongoose.Types.ObjectId;
 
 // Model imports
 const User = require("./models/User");
@@ -377,6 +378,57 @@ app.get(
     } catch (error) {
       console.error("Error fetching responses:", error);
       res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+// Get responses for a single survey and prep them for visualiation
+app.get(
+  "/survey-responses/:surveyId/visualize",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      console.log(req.params.surveyId);
+      const surveyId = new mongoose.Types.ObjectId(req.params.surveyId);
+
+      // Retrieve the survey to determine the type of each question
+      const survey = await Survey.findById(surveyId);
+      if (!survey) {
+        return res.status(404).send("Survey not found");
+      }
+
+      // Initialize an object to hold the aggregated data
+      let aggregatedData = {};
+
+      // Loop through each question in the survey
+      for (let question of survey.questions) {
+        if (question.question_type === "multiple_choice") {
+          // Aggregate data for multiple-choice questions
+          const mcData = await Response.aggregate([
+            { $match: { surveyId: surveyId } },
+            { $unwind: "$answers" },
+            { $match: { "answers.question": question.question } },
+            { $group: { _id: "$answers.answer", count: { $sum: 1 } } }
+          ]);
+          aggregatedData[question.question] = mcData;
+        } else if (question.question_type === "rating_scale") {
+          // Aggregate data for rating-scale questions
+          const ratingData = await Response.aggregate([
+            { $match: { surveyId: surveyId } },
+            { $unwind: "$answers" },
+            { $match: { "answers.question": question.question } },
+            { $group: { _id: null, averageRating: { $avg: { $toInt: "$answers.answer" } } } }
+          ]);
+          aggregatedData[question.question] = ratingData;
+        }
+        // Other question types can be handled similarly
+      }
+
+      res.json(aggregatedData);
+    } catch (error) {
+      console.error("Error fetching aggregated data", error);
+      res.status(500).send("Error fetching aggregated data");
     }
   }
 );

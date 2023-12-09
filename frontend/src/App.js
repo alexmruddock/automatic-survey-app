@@ -7,6 +7,7 @@ import SurveyDisplayById from "./SurveyDisplayById";
 import LoginForm from "./LoginForm";
 import RegistrationForm from "./RegistrationForm";
 import SurveyResponses from "./SurveyResponses";
+import SurveyVisualizations from "./SurveyVisualizations"; // Import the new component
 //import LocalStorageDisplay from "./LocalStorageDisplay";
 import authenticatedFetch from "./authenticatedFetch";
 import UserManagement from "./UserManagement";
@@ -65,13 +66,13 @@ function App() {
   return (
     <Router>
       {isLoggedIn !== null && (
-      <Header
-        userRole={userRole}
-        userEmail={userEmail}
-        handleLogout={handleLogout}
-        isLoggedIn={isLoggedIn}
-      />
-    )}
+        <Header
+          userRole={userRole}
+          userEmail={userEmail}
+          handleLogout={handleLogout}
+          isLoggedIn={isLoggedIn}
+        />
+      )}
       <div className="App bg-gray-100 min-h-screen flex flex-col items-center pt-8">
         <Routes>
           <Route path="/" element={<Home userRole={userRole} />} />
@@ -97,6 +98,10 @@ function App() {
             <Route
               path="/survey-responses/:surveyId"
               element={<SurveyResponses />}
+            />
+            <Route
+              path="/survey-visualizations/:surveyId"
+              element={<SurveyVisualizations />}
             />
           </>
           {/* ... other routes ... */}
