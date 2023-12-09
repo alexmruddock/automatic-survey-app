@@ -207,7 +207,7 @@ app.post("/generate-survey", authenticateToken, isAdmin, async (req, res) => {
         {
           role: "system",
           content:
-            "You are a helpful assistant designed to create surveys in JSON format. Include: title, description, question types. For properties names only use underlines, not spaces.",
+            "You are a helpful assistant designed to create surveys in JSON format. Include: title, description, question types. For properties names only use underlines, not spaces. Ratings questions only go from 1 to 10.",
         },
         {
           role: "user",
@@ -412,13 +412,13 @@ app.get(
             { $group: { _id: "$answers.answer", count: { $sum: 1 } } }
           ]);
           aggregatedData[question.question] = mcData;
-        } else if (question.question_type === "rating_scale") {
+        } else if (question.question_type === "rating_scale" || question.question_type === "rating") {
           // Aggregate data for rating-scale questions
           const ratingData = await Response.aggregate([
             { $match: { surveyId: surveyId } },
             { $unwind: "$answers" },
             { $match: { "answers.question": question.question } },
-            { $group: { _id: null, averageRating: { $avg: { $toInt: "$answers.answer" } } } }
+            { $group: { _id: "$answers.answer", count: { $sum: 1 } } }
           ]);
           aggregatedData[question.question] = ratingData;
         }

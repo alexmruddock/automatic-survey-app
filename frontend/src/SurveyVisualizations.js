@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import MyBarChart from "./MyBarChart"; // Import your chart components
 import authenticatedFetch from "./authenticatedFetch";
+import MyHistogram from "./MyHistogram";
 
 function SurveyVisualizations() {
   const [visualizationData, setVisualizationData] = useState([]);
@@ -60,18 +61,27 @@ function SurveyVisualizations() {
       value: item.count, // or another field, depending on your data structure
     }));
 
+    // Determine the appropriate chart component based on the question type
+    let ChartComponent;
     switch (visualization.questionType) {
       case "multiple_choice":
-        return <MyBarChart key={key} data={chartData} />;
+        ChartComponent = MyBarChart;
+        break;
       case "rating_scale":
-        // Use another chart component here, with the appropriate transformation if needed
+      case "rating":
+        ChartComponent = MyHistogram;
         break;
       // Add other cases as needed
       default:
-        return (
-          <p key={key}>No visualization available for this question type</p>
-        );
+        ChartComponent = () => <p>No visualization available for this question type</p>;
     }
+
+    return (
+      <div key={key} className="mb-6">
+        <h3 className="text-lg font-medium mb-2">{visualization.question}</h3>
+        <ChartComponent data={chartData} />
+      </div>
+    );
   };
 
   return (
