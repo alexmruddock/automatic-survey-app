@@ -170,6 +170,26 @@ app.put(
   }
 );
 
+// update user profile
+app.put("/update-profile/:userId", authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const profileUpdates = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { profile: profileUpdates }},
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    res.json({ message: "Profile updated successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating profile." });
+  }
+});
+
 // delete user
 app.delete(
   "/delete-user/:userId",
@@ -188,6 +208,75 @@ app.delete(
     }
   }
 );
+
+// create segment
+app.post("/create-segment", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { name, description, criteria } = req.body;
+    const createdBy = req.user.userId; // Assuming the user ID is stored in req.user
+
+    const newSegment = new Segment({ name, description, criteria, createdBy });
+    await newSegment.save();
+
+    res.status(201).json({ message: "Segment created successfully", segmentId: newSegment._id });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating segment." });
+  }
+});
+
+// fetch users in segment
+app.get("/users-by-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    const segment = await Segment.findById(segmentId);
+
+    if (!segment) {
+      return res.status(404).json({ message: "Segment not found." });
+    }
+
+    // This is a simplified example. You'll need to implement the logic to filter users based on the segment criteria.
+    const users = await User.find({ "profile.city": segment.criteria.city });
+    
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users." });
+  }
+});
+
+// fetch segment by id
+app.put("/update-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    const segmentUpdates = req.body;
+
+    const updatedSegment = await Segment.findByIdAndUpdate(
+      segmentId,
+      { $set: segmentUpdates },
+      { new: true }
+    );
+    if (!updatedSegment) {
+      return res.status(404).json({ message: "Segment not found." });
+    }
+    res.json({ message: "Segment updated successfully.", updatedSegment });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating segment." });
+  }
+});
+
+// delete segment by id
+app.delete("/delete-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    const deletedSegment = await Segment.findByIdAndDelete(segmentId);
+
+    if (!deletedSegment) {
+      return res.status(404).json({ message: "Segment not found." });
+    }
+    res.json({ message: "Segment deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting segment." });
+  }
+});
 
 // OpenAI API
 const { OpenAI } = require("openai");

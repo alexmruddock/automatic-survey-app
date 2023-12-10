@@ -6,6 +6,17 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'member'], default: 'member' },
   refreshToken: String, 
+  profile: {
+    firstName: String,
+    lastName: String,
+    city: String,
+    country: String,
+    company: String,
+    industry: String,
+    interests: [String],
+    products: [String],
+    nps: Number,
+  },
 });
 
 userSchema.pre('save', async function(next) {
