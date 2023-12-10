@@ -3,15 +3,11 @@ const mongoose = require('mongoose');
 const segmentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
-  criteria: {
-    city: String,
-    country: String,
-    company: String,
-    industry: String,
-    interests: [String],
-    products: [String],
-    nps: Number,
-  },
+  criteria: [{
+    key: String,
+    operator: String,
+    value: String,
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

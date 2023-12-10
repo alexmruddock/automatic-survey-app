@@ -1,10 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function Header({ userRole, userEmail, handleLogout}) {
-  const isLoggedIn = !!localStorage.getItem('accessToken');
+function Header({ userRole, userEmail }) {
+  const isLoggedIn = !!localStorage.getItem("accessToken");
+  const navigate = useNavigate();
+
   return (
-    <nav className="bg-gray-800 p-4 text-white flex justify-between items-center">
+    <nav className="bg-gray-800 p-4 text-white flex justify-between items-center sticky top-0 shadow-md">
       <ul className="flex space-x-4">
         <li>
           <Link to="/" className="hover:text-gray-300">
@@ -23,6 +26,13 @@ function Header({ userRole, userEmail, handleLogout}) {
             </Link>
           </li>
         )}
+        {userRole === "admin" && (
+          <li>
+            <Link to="/manage-segments" className="hover:text-gray-300">
+              Manage Segments
+            </Link>
+          </li>
+        )}
       </ul>
 
       {isLoggedIn && (
@@ -32,7 +42,7 @@ function Header({ userRole, userEmail, handleLogout}) {
             <span className="text-sm text-gray-400">({userRole})</span>
           </span>
           <button
-            onClick={handleLogout}
+            onClick={() => navigate('/logout')}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           >
             Logout

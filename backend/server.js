@@ -9,6 +9,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const User = require("./models/User");
 const Survey = require("./models/Survey");
 const Response = require("./models/Response");
+const Segment = require("./models/Segment");
 
 // Set up express server
 const app = express();
@@ -212,6 +213,7 @@ app.delete(
 // create segment
 app.post("/create-segment", authenticateToken, isAdmin, async (req, res) => {
   try {
+    console.log("Received segment data: ", req.body);
     const { name, description, criteria } = req.body;
     const createdBy = req.user.userId; // Assuming the user ID is stored in req.user
 
@@ -221,6 +223,46 @@ app.post("/create-segment", authenticateToken, isAdmin, async (req, res) => {
     res.status(201).json({ message: "Segment created successfully", segmentId: newSegment._id });
   } catch (error) {
     res.status(500).json({ message: "Error creating segment." });
+  }
+});
+
+// fetch all segments
+app.get("/segments", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const segments = await Segment.find();
+    res.json(segments);
+  } catch (error) {
+    res.status(500).send({ message: "Error fetching segments." });
+  }
+});
+
+// fetch specific segment
+app.get("/segments/:segmentId", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    const segment = await Segment.findById(segmentId);
+    if (!segment) {
+      return res.status(404).json({ message: "Segment not found" });
+    }
+    res.json(segment);
+  } catch (error) {
+    console.error("Error fetching segment:", error);
+    res.status(500).json({ message: "Error fetching segment" });
+  }
+});
+
+// Get segment by ID for editing
+app.get("/edit-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    const segment = await Segment.findById(segmentId);
+    if (!segment) {
+      return res.status(404).json({ message: "Segment not found" });
+    }
+    res.json(segment);
+  } catch (error) {
+    console.error("Error fetching segment:", error);
+    res.status(500).json({ message: "Error fetching segment" });
   }
 });
 
@@ -234,8 +276,29 @@ app.get("/users-by-segment/:segmentId", authenticateToken, isAdmin, async (req, 
       return res.status(404).json({ message: "Segment not found." });
     }
 
-    // This is a simplified example. You'll need to implement the logic to filter users based on the segment criteria.
-    const users = await User.find({ "profile.city": segment.criteria.city });
+    // Dynamically build the query based on segment criteria
+    let query = {};
+    segment.criteria.forEach(criterion => {
+      const field = `profile.${criterion.key}`;
+
+      switch (criterion.operator) {
+        case 'includes':
+          query[field] = criterion.value;
+          break;
+        case 'excludes':
+          query[field] = { $ne: criterion.value };
+          break;
+        case 'greaterThan':
+          query[field] = { $gt: criterion.value };
+          break;
+        case 'lessThan':
+          query[field] = { $lt: criterion.value };
+          break;
+        // Add more cases as needed for different operators
+      }
+    });
+
+    const users = await User.find(query);
     
     res.json(users);
   } catch (error) {
@@ -243,7 +306,7 @@ app.get("/users-by-segment/:segmentId", authenticateToken, isAdmin, async (req, 
   }
 });
 
-// fetch segment by id
+// update segment by id
 app.put("/update-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
   try {
     const { segmentId } = req.params;

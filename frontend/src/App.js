@@ -5,6 +5,7 @@ import Home from "./Home";
 import CreateSurvey from "./CreateSurvey";
 import SurveyDisplayById from "./SurveyDisplayById";
 import LoginForm from "./LoginForm";
+import Logout from "./Logout";
 import RegistrationForm from "./RegistrationForm";
 import SurveyResponses from "./SurveyResponses";
 import SurveyVisualizations from "./SurveyVisualizations"; // Import the new component
@@ -12,9 +13,12 @@ import SurveyVisualizations from "./SurveyVisualizations"; // Import the new com
 import authenticatedFetch from "./authenticatedFetch";
 import UserManagement from "./UserManagement";
 import SurveysList from "./SurveysList";
+import SegmentManager from "./SegmentManager";
+import EditSegment from "./EditSegment";
+import SegmentUsers from "./SegmentUsers";
 import "./index.css";
 
-function App() {
+function App() {  
   const [userRole, setUserRole] = useState(null); // Initialize user role to null
   const [userEmail, setUserEmail] = useState(null); // Initialize user email to null
   const [isLoggedIn, setIsLoggedIn] = useState(null); // Initialize isLoggedIn to false
@@ -50,13 +54,14 @@ function App() {
     checkAuthenticationStatus();
   }, []);
 
-  const handleLogout = () => {
+  // Function to log the user out
+  /* const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("userEmail");
     setIsLoggedIn(false);
-    window.location.reload(); // Refresh the page to update the UI
-  };
+    //navigate('/');
+  }; */
 
   function setUserDetails(email, role) {
     setUserEmail(email);
@@ -69,7 +74,6 @@ function App() {
         <Header
           userRole={userRole}
           userEmail={userEmail}
-          handleLogout={handleLogout}
           isLoggedIn={isLoggedIn}
         />
       )}
@@ -80,6 +84,7 @@ function App() {
             path="/login"
             element={<LoginForm setUserDetails={setUserDetails} />}
           />
+          <Route path="/logout" element={<Logout />} />
           <Route
             path="/register"
             element={<RegistrationForm setUserDetails={setUserDetails} />}
@@ -103,8 +108,10 @@ function App() {
               path="/survey-visualizations/:surveyId"
               element={<SurveyVisualizations />}
             />
+            <Route path="/manage-segments" element={<SegmentManager />} />
+            <Route path="/edit-segment/:segmentId" element={<EditSegment />} />
+            <Route path="/segment-users/:segmentId" element={<SegmentUsers />} />
           </>
-          {/* ... other routes ... */}
         </Routes>
       </div>
     </Router>
