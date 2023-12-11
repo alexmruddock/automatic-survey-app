@@ -129,7 +129,7 @@ app.get("/fetch-user", authenticateToken, async (req, res) => {
       return res.status(404).send("User not found");
     }
 
-    res.json({ email: user.email, role: user.role });
+    res.json({ email: user.email, role: user.role, userId: user._id });
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ message: error.message });
@@ -439,10 +439,15 @@ app.post(
 // Create a new survey in the database from the generated survey
 app.post("/create-survey", authenticateToken, isAdmin, async (req, res) => {
   try {
-    const { title, description, questions } = req.body; // Assuming these fields are in the request body
+    const { title, description, questions, segments } = req.body;
 
-    const newSurvey = new Survey({ title, description, questions });
-    await newSurvey.save(); // Save the survey to the database
+    const newSurvey = new Survey({ 
+      title, 
+      description, 
+      questions,
+      segments // Include the segment IDs in the survey document
+    });
+    await newSurvey.save();
 
     res.status(201).json({
       message: "Survey created successfully",
@@ -477,6 +482,49 @@ app.get("/get-surveys", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// get surveys for user based on user segments
+app.get("/surveys-for-user/:userId", authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).populate('profile');
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Fetch all segments
+    const segments = await Segment.find();
+
+    // Determine which segments the user falls into
+    const userSegmentIds = segments.filter(segment => {
+      return segment.criteria.every(criterion => {
+        const userValue = user.profile[criterion.key];
+        switch (criterion.operator) {
+          case 'includes': return userValue.includes(criterion.value);
+          case 'excludes': return !userValue.includes(criterion.value);
+          case 'greaterThan': return userValue > criterion.value;
+          case 'lessThan': return userValue < criterion.value;
+          default: return false;
+        }
+      });
+    }).map(segment => segment._id);
+
+    // Fetch surveys that are either unsegmented or match one of the user's segments
+    const targetedSurveys = await Survey.find({
+      $or: [
+        { segments: { $in: userSegmentIds } },
+        { segments: { $exists: false } }
+      ]
+    });
+
+    res.json(targetedSurveys);
+  } catch (error) {
+    console.error("Error fetching surveys for user:", error);
+    res.status(500).json({ message: "Error fetching surveys." });
+  }
+});
+
+
 
 // Get survey by ID
 app.get("/retrieve-survey/:surveyId", async (req, res) => {

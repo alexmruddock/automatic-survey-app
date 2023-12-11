@@ -18,10 +18,12 @@ import SegmentManager from "./SegmentManager";
 import EditSegment from "./EditSegment";
 import SegmentUsers from "./SegmentUsers";
 import "./index.css";
+import FilteredSurveysList from "./FilteredSurveysList";
 
-function App() {  
+function App() {
   const [userRole, setUserRole] = useState(null); // Initialize user role to null
   const [userEmail, setUserEmail] = useState(null); // Initialize user email to null
+  const [userId, setUserId] = useState(null); // Initialize user ID to null
   const [isLoggedIn, setIsLoggedIn] = useState(null); // Initialize isLoggedIn to false
 
   useEffect(() => {
@@ -39,6 +41,7 @@ function App() {
             const userData = await response.json();
             setUserRole(userData.role);
             setUserEmail(userData.email);
+            setUserId(userData.userId);
             setIsLoggedIn(true);
           } else {
             // User is not logged in
@@ -84,7 +87,13 @@ function App() {
           <>
             <Route
               path="/surveys"
-              element={<SurveysList userRole={userRole} />}
+              element={
+                userRole === "admin" ? (
+                  <SurveysList userRole={userRole} />
+                ) : (
+                  <FilteredSurveysList userRole={userRole} userId={userId} />
+                )
+              }
             />
             <Route
               path="/users"
@@ -103,7 +112,10 @@ function App() {
             />
             <Route path="/manage-segments" element={<SegmentManager />} />
             <Route path="/edit-segment/:segmentId" element={<EditSegment />} />
-            <Route path="/segment-users/:segmentId" element={<SegmentUsers />} />
+            <Route
+              path="/segment-users/:segmentId"
+              element={<SegmentUsers />}
+            />
           </>
         </Routes>
       </div>

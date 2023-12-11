@@ -8,9 +8,12 @@ const surveySchema = new mongoose.Schema({
     question: String,
     options: [String],
     scale: Number
-  }]
+  }],
+  segments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Segment'
+  }],
 });
 
 const Survey = mongoose.model('Survey', surveySchema);
-
 module.exports = Survey;

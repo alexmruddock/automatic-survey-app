@@ -4,15 +4,6 @@ import { Link } from 'react-router-dom';
 
 function Home({ userRole }) {
   const isLoggedIn = !!localStorage.getItem('accessToken');
-  /*
-  const userEmail = localStorage.getItem('userEmail');
-
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userEmail');
-    window.location.reload(); // Refresh the page to update the UI
-  };
-  */
 
   return (
     <div>
