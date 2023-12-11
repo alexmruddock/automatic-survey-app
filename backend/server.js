@@ -179,7 +179,7 @@ app.put("/update-profile/:userId", authenticateToken, async (req, res) => {
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: { profile: profileUpdates }},
+      { $set: { profile: profileUpdates } },
       { new: true }
     );
     if (!updatedUser) {
@@ -220,7 +220,12 @@ app.post("/create-segment", authenticateToken, isAdmin, async (req, res) => {
     const newSegment = new Segment({ name, description, criteria, createdBy });
     await newSegment.save();
 
-    res.status(201).json({ message: "Segment created successfully", segmentId: newSegment._id });
+    res
+      .status(201)
+      .json({
+        message: "Segment created successfully",
+        segmentId: newSegment._id,
+      });
   } catch (error) {
     res.status(500).json({ message: "Error creating segment." });
   }
@@ -237,109 +242,134 @@ app.get("/segments", authenticateToken, isAdmin, async (req, res) => {
 });
 
 // fetch specific segment
-app.get("/segments/:segmentId", authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { segmentId } = req.params;
-    const segment = await Segment.findById(segmentId);
-    if (!segment) {
-      return res.status(404).json({ message: "Segment not found" });
+app.get(
+  "/segments/:segmentId",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { segmentId } = req.params;
+      const segment = await Segment.findById(segmentId);
+      if (!segment) {
+        return res.status(404).json({ message: "Segment not found" });
+      }
+      res.json(segment);
+    } catch (error) {
+      console.error("Error fetching segment:", error);
+      res.status(500).json({ message: "Error fetching segment" });
     }
-    res.json(segment);
-  } catch (error) {
-    console.error("Error fetching segment:", error);
-    res.status(500).json({ message: "Error fetching segment" });
   }
-});
+);
 
 // Get segment by ID for editing
-app.get("/edit-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { segmentId } = req.params;
-    const segment = await Segment.findById(segmentId);
-    if (!segment) {
-      return res.status(404).json({ message: "Segment not found" });
+app.get(
+  "/edit-segment/:segmentId",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { segmentId } = req.params;
+      const segment = await Segment.findById(segmentId);
+      if (!segment) {
+        return res.status(404).json({ message: "Segment not found" });
+      }
+      res.json(segment);
+    } catch (error) {
+      console.error("Error fetching segment:", error);
+      res.status(500).json({ message: "Error fetching segment" });
     }
-    res.json(segment);
-  } catch (error) {
-    console.error("Error fetching segment:", error);
-    res.status(500).json({ message: "Error fetching segment" });
   }
-});
+);
 
 // fetch users in segment
-app.get("/users-by-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { segmentId } = req.params;
-    const segment = await Segment.findById(segmentId);
+app.get(
+  "/users-by-segment/:segmentId",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { segmentId } = req.params;
+      const segment = await Segment.findById(segmentId);
 
-    if (!segment) {
-      return res.status(404).json({ message: "Segment not found." });
-    }
-
-    // Dynamically build the query based on segment criteria
-    let query = {};
-    segment.criteria.forEach(criterion => {
-      const field = `profile.${criterion.key}`;
-
-      switch (criterion.operator) {
-        case 'includes':
-          query[field] = criterion.value;
-          break;
-        case 'excludes':
-          query[field] = { $ne: criterion.value };
-          break;
-        case 'greaterThan':
-          query[field] = { $gt: criterion.value };
-          break;
-        case 'lessThan':
-          query[field] = { $lt: criterion.value };
-          break;
-        // Add more cases as needed for different operators
+      if (!segment) {
+        return res.status(404).json({ message: "Segment not found." });
       }
-    });
 
-    const users = await User.find(query);
-    
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching users." });
+      // Dynamically build the query based on segment criteria
+      let query = {};
+      segment.criteria.forEach((criterion) => {
+        const field = `profile.${criterion.key}`;
+
+        switch (criterion.operator) {
+          case "includes":
+            query[field] = criterion.value;
+            break;
+          case "excludes":
+            query[field] = { $ne: criterion.value };
+            break;
+          case "greaterThan":
+            query[field] = { $gt: criterion.value };
+            break;
+          case "lessThan":
+            query[field] = { $lt: criterion.value };
+            break;
+          // Add more cases as needed for different operators
+        }
+      });
+
+      const users = await User.find(query);
+
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching users." });
+    }
   }
-});
+);
 
 // update segment by id
-app.put("/update-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { segmentId } = req.params;
-    const segmentUpdates = req.body;
+app.put(
+  "/update-segment/:segmentId",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { segmentId } = req.params;
+      const segmentUpdates = req.body;
 
-    const updatedSegment = await Segment.findByIdAndUpdate(
-      segmentId,
-      { $set: segmentUpdates },
-      { new: true }
-    );
-    if (!updatedSegment) {
-      return res.status(404).json({ message: "Segment not found." });
+      const updatedSegment = await Segment.findByIdAndUpdate(
+        segmentId,
+        { $set: segmentUpdates },
+        { new: true }
+      );
+      if (!updatedSegment) {
+        return res.status(404).json({ message: "Segment not found." });
+      }
+      res.json({ message: "Segment updated successfully.", updatedSegment });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating segment." });
     }
-    res.json({ message: "Segment updated successfully.", updatedSegment });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating segment." });
   }
-});
+);
 
 // delete segment by id
-app.delete("/delete-segment/:segmentId", authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { segmentId } = req.params;
-    const deletedSegment = await Segment.findByIdAndDelete(segmentId);
+app.delete(
+  "/delete-segment/:segmentId",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { segmentId } = req.params;
+      const deletedSegment = await Segment.findByIdAndDelete(segmentId);
 
-    if (!deletedSegment) {
-      return res.status(404).json({ message: "Segment not found." });
+      if (!deletedSegment) {
+        return res.status(404).json({ message: "Segment not found." });
+      }
+      res.json({ message: "Segment deleted successfully." });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting segment." });
     }
-    res.json({ message: "Segment deleted successfully." });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting segment." });
   }
-});
+);
 
 // OpenAI API
 const { OpenAI } = require("openai");
@@ -383,6 +413,95 @@ app.post("/generate-survey", authenticateToken, isAdmin, async (req, res) => {
       console.error("Response:", error.response.data);
     }
     return res.status(500).send("Error generating survey");
+  }
+});
+
+// Generate image prompt based on survey description
+app.post(
+  "/generate-image-prompt",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { title, description } = req.body;
+
+      // Generate a refined prompt using OpenAI
+      const chatCompletion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a helpful assistant designed to refine prompts for image generation.",
+          },
+          {
+            role: "user",
+            content: `Refine this prompt for image generation: An image representing the concept: ${title}. Details: ${description}`,
+          },
+        ],
+        model: "gpt-3.5-turbo-1106",
+      });
+
+      console.log("Refined prompt: ", chatCompletion.choices[0], "\n");
+
+      // Assuming the last message in the completion is the refined prompt
+      const refinedPrompt = chatCompletion.choices[0].message.content;
+
+      res.json({ prompt: refinedPrompt });
+    } catch (error) {
+      console.error("Error refining image prompt with OpenAI:", error);
+
+      if (error.response) {
+        console.error("Response:", error.response.data);
+      }
+      return res.status(500).send("Error refining image prompt");
+    }
+  }
+);
+
+// generate image based on prompt
+app.post("/generate-image", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+    });
+
+    console.log("/generate-image endpoint response: ", response, "\n");
+
+    // Check if response contains the expected data
+    if (response && response.data && response.data.length > 0) {
+      // Assuming the first element in the data array contains the image URL
+      const imageUrl = response.data[0].url;
+      res.json({ imageUrl });
+    } else {
+      throw new Error(
+        "No image was generated or response format is not as expected."
+      );
+    }
+  } catch (error) {
+    console.error("Error generating image:", error);
+    res.status(500).send("Error generating image");
+  }
+});
+
+// retrieve image url for survey
+app.get("/get-image-url/:surveyId", authenticateToken, async (req, res) => {
+  try {
+      const { surveyId } = req.params;
+      const survey = await Survey.findById(surveyId);
+
+      if (!survey) {
+          return res.status(404).send("Survey not found.");
+      }
+
+      res.json({ imageUrl: survey.imageUrl });
+  } catch (error) {
+      console.error("Error fetching image URL:", error);
+      res.status(500).send("Error fetching image URL");
   }
 });
 
@@ -441,11 +560,11 @@ app.post("/create-survey", authenticateToken, isAdmin, async (req, res) => {
   try {
     const { title, description, questions, segments } = req.body;
 
-    const newSurvey = new Survey({ 
-      title, 
-      description, 
+    const newSurvey = new Survey({
+      title,
+      description,
       questions,
-      segments // Include the segment IDs in the survey document
+      segments, // Include the segment IDs in the survey document
     });
     await newSurvey.save();
 
@@ -487,7 +606,7 @@ app.get("/get-surveys", async (req, res) => {
 app.get("/surveys-for-user/:userId", authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId).populate('profile');
+    const user = await User.findById(userId).populate("profile");
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -496,25 +615,32 @@ app.get("/surveys-for-user/:userId", authenticateToken, async (req, res) => {
     const segments = await Segment.find();
 
     // Determine which segments the user falls into
-    const userSegmentIds = segments.filter(segment => {
-      return segment.criteria.every(criterion => {
-        const userValue = user.profile[criterion.key];
-        switch (criterion.operator) {
-          case 'includes': return userValue.includes(criterion.value);
-          case 'excludes': return !userValue.includes(criterion.value);
-          case 'greaterThan': return userValue > criterion.value;
-          case 'lessThan': return userValue < criterion.value;
-          default: return false;
-        }
-      });
-    }).map(segment => segment._id);
+    const userSegmentIds = segments
+      .filter((segment) => {
+        return segment.criteria.every((criterion) => {
+          const userValue = user.profile[criterion.key];
+          switch (criterion.operator) {
+            case "includes":
+              return userValue.includes(criterion.value);
+            case "excludes":
+              return !userValue.includes(criterion.value);
+            case "greaterThan":
+              return userValue > criterion.value;
+            case "lessThan":
+              return userValue < criterion.value;
+            default:
+              return false;
+          }
+        });
+      })
+      .map((segment) => segment._id);
 
     // Fetch surveys that are either unsegmented or match one of the user's segments
     const targetedSurveys = await Survey.find({
       $or: [
         { segments: { $in: userSegmentIds } },
-        { segments: { $exists: false } }
-      ]
+        { segments: { $exists: false } },
+      ],
     });
 
     res.json(targetedSurveys);
@@ -523,8 +649,6 @@ app.get("/surveys-for-user/:userId", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Error fetching surveys." });
   }
 });
-
-
 
 // Get survey by ID
 app.get("/retrieve-survey/:surveyId", async (req, res) => {
@@ -583,24 +707,31 @@ app.get(
 );
 
 // Update a survey
-app.put('/update-survey/:surveyId', authenticateToken, isAdmin, async (req, res) => {
-  const surveyId = req.params.surveyId;
-  const updatedData = req.body; // This should include the changes to the survey
+app.put(
+  "/update-survey/:surveyId",
+  authenticateToken,
+  isAdmin,
+  async (req, res) => {
+    const surveyId = req.params.surveyId;
+    const updatedData = req.body; // This should include the changes to the survey
 
-  try {
-    // Find the survey by ID and update it with the new data
-    const survey = await Survey.findByIdAndUpdate(surveyId, updatedData, { new: true });
-    
-    if (!survey) {
-      return res.status(404).json({ message: 'Survey not found' });
+    try {
+      // Find the survey by ID and update it with the new data
+      const survey = await Survey.findByIdAndUpdate(surveyId, updatedData, {
+        new: true,
+      });
+
+      if (!survey) {
+        return res.status(404).json({ message: "Survey not found" });
+      }
+
+      res.json(survey);
+    } catch (error) {
+      console.error("Error updating survey:", error);
+      res.status(500).json({ message: error.message });
     }
-
-    res.json(survey);
-  } catch (error) {
-    console.error("Error updating survey:", error);
-    res.status(500).json({ message: error.message });
   }
-});
+);
 
 // Get responses for a single survey and prep them for visualiation
 app.get(
@@ -629,16 +760,19 @@ app.get(
             { $match: { surveyId: surveyId } },
             { $unwind: "$answers" },
             { $match: { "answers.question": question.question } },
-            { $group: { _id: "$answers.answer", count: { $sum: 1 } } }
+            { $group: { _id: "$answers.answer", count: { $sum: 1 } } },
           ]);
           aggregatedData[question.question] = mcData;
-        } else if (question.question_type === "rating_scale" || question.question_type === "rating") {
+        } else if (
+          question.question_type === "rating_scale" ||
+          question.question_type === "rating"
+        ) {
           // Aggregate data for rating-scale questions
           const ratingData = await Response.aggregate([
             { $match: { surveyId: surveyId } },
             { $unwind: "$answers" },
             { $match: { "answers.question": question.question } },
-            { $group: { _id: "$answers.answer", count: { $sum: 1 } } }
+            { $group: { _id: "$answers.answer", count: { $sum: 1 } } },
           ]);
           aggregatedData[question.question] = ratingData;
         }

@@ -5,28 +5,35 @@ import BackButton from "./BackButton";
 import SurveyForm from "./SurveyForm";
 import SurveyDisplay from "./SurveyDisplay";
 import { generateSurvey } from "./generateSurvey";
+import { generateSurveyImage } from "./generateSurveyImage";
 import { saveSurvey } from "./saveSurvey";
 
 function CreateSurvey() {
   const [survey, setSurvey] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
   const [segments, setSegments] = useState([]); // For storing available segments
   const [selectedSegments, setSelectedSegments] = useState([]); // For storing selected segment IDs
   const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch segments when the component mounts
-    authenticatedFetch("https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/segments")
-      .then(response => response.json())
-      .then(data => setSegments(data))
-      .catch(error => console.error("Error fetching segments:", error));
+    authenticatedFetch(
+      "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/segments"
+    )
+      .then((response) => response.json())
+      .then((data) => setSegments(data))
+      .catch((error) => console.error("Error fetching segments:", error));
   }, []);
 
   const handleGenerate = async (surveyData) => {
     console.log("Received survey data: ", surveyData);
+    const title = surveyData.title;
     const description = surveyData.description;
     try {
       const generatedSurvey = await generateSurvey(description);
       setSurvey(generatedSurvey);
+      const generatedImageUrl = await generateSurveyImage( title, description );
+      setImageUrl(generatedImageUrl);
     } catch (error) {
       console.error(error.message);
     }
@@ -43,12 +50,18 @@ function CreateSurvey() {
       const savedData = await saveSurvey(surveyDataWithSegments);
       console.log("Saved Survey: ", savedData);
 
-      // provide user feedback and redirect 
+      // provide user feedback and redirect
       alert("Survey saved successfully!");
-      navigate('/');
+      navigate("/");
     } catch (error) {
       console.error(error.message);
       alert("Error saving survey!");
+    }
+  };
+
+  const handleOpenImage = () => {
+    if (imageUrl) {
+      window.open(imageUrl, "_blank"); // Open the image URL in a new tab
     }
   };
 
@@ -58,14 +71,27 @@ function CreateSurvey() {
       <SurveyForm onSubmit={handleGenerate} />
       <div className="h-8"></div>
       <SurveyDisplay survey={survey} />
-      <SelectSegments segments={segments} onSegmentChange={handleSegmentChange} />
+      <SelectSegments
+        segments={segments}
+        onSegmentChange={handleSegmentChange}
+      />
       {survey && (
-        <button
-          onClick={handleSave}
-          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Save Survey
-        </button>
+        <>
+          <button
+            onClick={handleSave}
+            className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Save Survey
+          </button>
+          {imageUrl && (
+            <button
+              onClick={handleOpenImage}
+              className="mt-4 ml-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              View Generated Image
+            </button>
+          )}
+        </>
       )}
     </div>
   );
@@ -74,16 +100,26 @@ function CreateSurvey() {
 // Component for segment selection
 function SelectSegments({ segments, onSegmentChange }) {
   const handleSelectionChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+    const selectedOptions = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
     onSegmentChange(selectedOptions);
   };
 
   return (
     <div>
       <label htmlFor="segments">Select Segments:</label>
-      <select multiple id="segments" onChange={handleSelectionChange} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
-        {segments.map(segment => (
-          <option key={segment._id} value={segment._id}>{segment.name}</option>
+      <select
+        multiple
+        id="segments"
+        onChange={handleSelectionChange}
+        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+      >
+        {segments.map((segment) => (
+          <option key={segment._id} value={segment._id}>
+            {segment.name}
+          </option>
         ))}
       </select>
     </div>

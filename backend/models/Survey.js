@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const surveySchema = new mongoose.Schema({
   title: String,
   description: String,
+  imageUrl: String,
   questions: [{
     question_type: String,
     question: String,
