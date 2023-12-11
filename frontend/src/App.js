@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./Header";
 import Home from "./Home";
 import CreateSurvey from "./CreateSurvey";
+import EditSurvey from "./EditSurvey";
 import SurveyDisplayById from "./SurveyDisplayById";
 import LoginForm from "./LoginForm";
 import Logout from "./Logout";
@@ -54,15 +55,6 @@ function App() {
     checkAuthenticationStatus();
   }, []);
 
-  // Function to log the user out
-  /* const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("userEmail");
-    setIsLoggedIn(false);
-    //navigate('/');
-  }; */
-
   function setUserDetails(email, role) {
     setUserEmail(email);
     setUserRole(role);
@@ -100,6 +92,7 @@ function App() {
             />
             <Route path="/create" element={<CreateSurvey />} />
             <Route path="/survey/:surveyId" element={<SurveyDisplayById />} />
+            <Route path="/edit-survey/:surveyId" element={<EditSurvey />} />
             <Route
               path="/survey-responses/:surveyId"
               element={<SurveyResponses />}

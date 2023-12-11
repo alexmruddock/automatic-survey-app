@@ -534,6 +534,26 @@ app.get(
   }
 );
 
+// Update a survey
+app.put('/update-survey/:surveyId', authenticateToken, isAdmin, async (req, res) => {
+  const surveyId = req.params.surveyId;
+  const updatedData = req.body; // This should include the changes to the survey
+
+  try {
+    // Find the survey by ID and update it with the new data
+    const survey = await Survey.findByIdAndUpdate(surveyId, updatedData, { new: true });
+    
+    if (!survey) {
+      return res.status(404).json({ message: 'Survey not found' });
+    }
+
+    res.json(survey);
+  } catch (error) {
+    console.error("Error updating survey:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Get responses for a single survey and prep them for visualiation
 app.get(
   "/survey-responses/:surveyId/visualize",

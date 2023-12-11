@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BackButton from "./BackButton";
+import authenticatedFetch from "./authenticatedFetch";
 import "./index.css";
 
 function SurveyDisplayById() {
@@ -9,6 +10,8 @@ function SurveyDisplayById() {
   const { surveyId } = useParams();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
+
+  const [userRole, setUserRole] = useState(null);
 
   const userEmail = localStorage.getItem("userEmail");
   const surveyCountKey = `surveyCount_${surveyId}_${userEmail}`;
@@ -31,6 +34,29 @@ function SurveyDisplayById() {
       .then((data) => setSurvey(data))
       .catch((error) => console.error("Error fetching survey:", error));
   }, [surveyId]);
+
+  // New useEffect for fetching user role
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await authenticatedFetch(
+          "https://vigilant-orbit-v6x6pp4w99636w9v-3000.app.github.dev/fetch-user"
+        );
+        if (response.ok) {
+          const userData = await response.json();
+          setUserRole(userData.role);
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+
+  const handleEdit = () => {
+    navigate(`/edit-survey/${surveyId}`);
+  };
 
   function handleResponseChange(questionIndex, value) {
     setResponses({ ...responses, [questionIndex]: value });
@@ -148,7 +174,19 @@ function SurveyDisplayById() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <BackButton />
+      <div className="flex justify-between items-center mb-4">
+        <BackButton />
+
+        {userRole === "admin" && (
+          <button
+            onClick={handleEdit}
+            className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition duration-300 ease-in-out"
+          >
+            Edit Survey
+          </button>
+        )}
+      </div>
+
       <h2 className="text-3xl font-semibold text-gray-800 my-4">
         {survey.title}
       </h2>
