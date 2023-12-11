@@ -6,11 +6,13 @@ import SurveyForm from "./SurveyForm";
 import SurveyDisplay from "./SurveyDisplay";
 import { generateSurvey } from "./generateSurvey";
 import { generateSurveyImage } from "./generateSurveyImage";
+import { uploadSurveyImage } from "./uploadSurveyImage";
 import { saveSurvey } from "./saveSurvey";
 
 function CreateSurvey() {
   const [survey, setSurvey] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrlAWS, setImageUrlAWS] = useState(null); 
   const [segments, setSegments] = useState([]); // For storing available segments
   const [selectedSegments, setSelectedSegments] = useState([]); // For storing selected segment IDs
   const navigate = useNavigate();
@@ -29,15 +31,29 @@ function CreateSurvey() {
     console.log("Received survey data: ", surveyData);
     const title = surveyData.title;
     const description = surveyData.description;
+
     try {
-      const generatedSurvey = await generateSurvey(description);
-      setSurvey(generatedSurvey);
-      const generatedImageUrl = await generateSurveyImage( title, description );
-      setImageUrl(generatedImageUrl);
+        // Generate the survey
+        const generatedSurvey = await generateSurvey(description);
+        setSurvey(generatedSurvey);
+
+        // Generate the image URL
+        const generatedImageUrl = await generateSurveyImage(title, description);
+
+        if (generatedImageUrl) {
+            setImageUrl(generatedImageUrl);
+
+            // Upload the image and get the permanent URL
+            const permanentImageUrl = await uploadSurveyImage(generatedImageUrl);
+            setImageUrlAWS(permanentImageUrl);
+        } else {
+            console.error('Failed to generate image URL');
+            // Handle the error case here, perhaps setting an error state or showing a notification
+        }
     } catch (error) {
-      console.error(error.message);
+        console.error(error.message);
     }
-  };
+};
 
   const handleSegmentChange = (selected) => {
     setSelectedSegments(selected); // Update the state with selected segment IDs
@@ -46,7 +62,7 @@ function CreateSurvey() {
   const handleSave = async () => {
     try {
       // Include selectedSegments in the survey data
-      const surveyDataWithSegments = { ...survey, segments: selectedSegments };
+      const surveyDataWithSegments = { ...survey, segments: selectedSegments, imageUrl: imageUrlAWS };
       const savedData = await saveSurvey(surveyDataWithSegments);
       console.log("Saved Survey: ", savedData);
 

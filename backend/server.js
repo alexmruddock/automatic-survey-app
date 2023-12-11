@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const fetch = require("node-fetch");
+const AWS = require("aws-sdk");
 const ObjectId = mongoose.Types.ObjectId;
 
 // Model imports
@@ -22,6 +24,23 @@ require("dotenv").config();
 // get tokens from local storage
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
+// create s3 bucket object
+const s3 = new AWS.S3();
+
+async function convertImageUrlToBase64(url) {
+  console.log("Converting image url to base64: ", url);
+  const response = await fetch(url);
+  console.log("Fetched b64: ", response);
+  if (!response.ok) throw new Error('Network response was not ok.');
+  const buffer = await response.buffer();
+  return buffer.toString('base64');
+}
 
 // Connect to MongoDB database
 mongoose
@@ -468,6 +487,7 @@ app.post("/generate-image", authenticateToken, isAdmin, async (req, res) => {
       prompt: prompt,
       n: 1,
       size: "1024x1024",
+      //response_format: "b64_json",
     });
 
     console.log("/generate-image endpoint response: ", response, "\n");
@@ -475,8 +495,10 @@ app.post("/generate-image", authenticateToken, isAdmin, async (req, res) => {
     // Check if response contains the expected data
     if (response && response.data && response.data.length > 0) {
       // Assuming the first element in the data array contains the image URL
+      //const imageBinary = response.data[0].b64_json;
       const imageUrl = response.data[0].url;
       res.json({ imageUrl });
+      //res.json({ imageBinary });
     } else {
       throw new Error(
         "No image was generated or response format is not as expected."
@@ -502,6 +524,52 @@ app.get("/get-image-url/:surveyId", authenticateToken, async (req, res) => {
   } catch (error) {
       console.error("Error fetching image URL:", error);
       res.status(500).send("Error fetching image URL");
+  }
+});
+
+// upload image to s3 bucket
+app.post("/upload-image", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    console.log("Request body when we call /upload-image: ", req.body);
+    
+    const imageUrl = req.body.image;
+
+    console.log("Image URL: ", imageUrl);
+
+    if (!imageUrl) {
+      return res.status(400).send("Image URL is missing or invalid");
+    }
+
+    // Convert the image URL to a base64 string
+    const imageBase64 = await convertImageUrlToBase64(imageUrl);
+
+    // Generate random string for image name
+    const imageName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    // Convert base64 image to buffer
+    const buffer = Buffer.from(imageBase64, 'base64');
+
+    // Set params for s3 bucket
+    const params = {
+      Bucket: 'imagebucketforsurveyapp',
+      Key: imageName + '.png',
+      Body: buffer,
+      ContentEncoding: 'base64',
+      ContentType: 'image/png'
+    };
+
+    // Upload image to s3 bucket
+    s3.upload(params, async (err, data) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Error uploading image");
+      }
+
+      res.json({ message: "Image uploaded successfully", imageUrl: data.Location });
+    });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).send("Error uploading image");
   }
 });
 
@@ -558,11 +626,12 @@ app.post(
 // Create a new survey in the database from the generated survey
 app.post("/create-survey", authenticateToken, isAdmin, async (req, res) => {
   try {
-    const { title, description, questions, segments } = req.body;
+    const { title, description, imageUrl, questions, segments } = req.body;
 
     const newSurvey = new Survey({
       title,
       description,
+      imageUrl, // Include the image URL in the survey document
       questions,
       segments, // Include the segment IDs in the survey document
     });
