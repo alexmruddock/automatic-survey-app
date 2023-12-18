@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import MyBarChart from "./MyBarChart"; // Import your chart components
 import authenticatedFetch from "./authenticatedFetch";
 import MyHistogram from "./MyHistogram";
+import BackButton from "./BackButton"; // Import the BackButton component
 
 function SurveyVisualizations() {
   const [visualizationData, setVisualizationData] = useState([]);
@@ -86,6 +87,7 @@ function SurveyVisualizations() {
 
   return (
     <div className="p-4 shadow-lg">
+      <BackButton />
       <h2 className="text-2xl font-bold mb-4">Survey Visualizations</h2>
       {visualizationData.map((visualization, index) =>
         renderVisualization(visualization, index)
